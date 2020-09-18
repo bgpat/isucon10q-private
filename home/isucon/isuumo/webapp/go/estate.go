@@ -27,7 +27,9 @@ func addEstate(e Estate) {
 	estateCache.Store(e.ID, &e)
 }
 
-func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, int, error) {
+func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, int, error) {
+	defer nrsgmt(ctx, "searchEstatesCache").End()
+
 	estates := make([]Estate, 0)
 	var err error
 	estateCache.Range(func(_, v interface{}) bool {

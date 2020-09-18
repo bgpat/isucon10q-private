@@ -27,7 +27,9 @@ func addChair(c Chair) {
 	chairCache.Store(c.ID, &c)
 }
 
-func searchChairsCache(price, height, width, depth *Range, kind, color string, features []string, page, perPage int) ([]Chair, int, error) {
+func searchChairsCache(ctx context.Context, price, height, width, depth *Range, kind, color string, features []string, page, perPage int) ([]Chair, int, error) {
+	defer nrsgmt(ctx, "searchChairsCache").End()
+
 	chairs := make([]Chair, 0)
 	var err error
 	chairCache.Range(func(_, v interface{}) bool {

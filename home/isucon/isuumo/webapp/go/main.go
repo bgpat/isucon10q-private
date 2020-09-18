@@ -273,7 +273,7 @@ func main() {
 	e.GET("/api/recommended_estate/:id", searchRecommendedEstateWithChair)
 
 	e.GET("/debug/chairs", func(c echo.Context) error {
-		chairs, count, err := searchChairsCache(nil, nil, nil, nil, "", "", nil, 0, 10)
+		chairs, count, err := searchChairsCache(nrctx(c), nil, nil, nil, nil, "", "", nil, 0, 10)
 		if err != nil {
 			c.Logger().Errorf("error : %v", err)
 			return c.JSON(http.StatusInternalServerError, err)
@@ -281,7 +281,7 @@ func main() {
 		return c.JSON(http.StatusOK, ChairSearchResponse{Count: int64(count), Chairs: chairs})
 	})
 	e.GET("/debug/estates", func(c echo.Context) error {
-		estates, count, err := searchEstatesCache(nil, nil, nil, nil, 0, 10)
+		estates, count, err := searchEstatesCache(nrctx(c), nil, nil, nil, nil, 0, 10)
 		if err != nil {
 			c.Logger().Errorf("error : %v", err)
 			return c.JSON(http.StatusInternalServerError, err)
@@ -516,7 +516,7 @@ func searchChairs(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	chairs, count, err := searchChairsCache(price, height, width, depth, kind, color, features, page, perPage)
+	chairs, count, err := searchChairsCache(nrctx(c), price, height, width, depth, kind, color, features, page, perPage)
 	if err != nil {
 		c.Logger().Errorf("searchChairsCache error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -763,7 +763,7 @@ func searchEstates(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	estates, count, err := searchEstatesCache(doorHeight, doorWidth, rent, features, page, perPage)
+	estates, count, err := searchEstatesCache(nrctx(c), doorHeight, doorWidth, rent, features, page, perPage)
 	if err != nil {
 		c.Logger().Errorf("searchEstatesCache error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
