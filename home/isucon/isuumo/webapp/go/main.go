@@ -272,6 +272,14 @@ func main() {
 	e.GET("/api/estate/search/condition", getEstateSearchCondition)
 	e.GET("/api/recommended_estate/:id", searchRecommendedEstateWithChair)
 
+	e.GET("/debug/chairs", func(c echo.Context) error {
+		chairs, count, err := searchChairsCache(nil, nil, nil, nil, "", "", nil, 0, 10)
+		if err != nil {
+			c.Logger().Errorf("error : %v", err)
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		return c.JSON(http.StatusOK, ChairSearchResponse{Count: int64(count), Chairs: chairs})
+	})
 	e.GET("/debug/estates", func(c echo.Context) error {
 		estates, count, err := searchEstatesCache(nil, nil, nil, nil, 0, 10)
 		if err != nil {
