@@ -37,6 +37,15 @@ func searchChairsCache(price, height, width, depth *Range, kind, color string, f
 			return true
 		}
 
+		if price != nil {
+			if price.Min != -1 && c.Price < price.Min {
+				return true
+			}
+			if price.Max != -1 && c.Price >= price.Max {
+				return true
+			}
+		}
+
 		if height != nil {
 			if height.Min != -1 && c.Height < height.Min {
 				return true
