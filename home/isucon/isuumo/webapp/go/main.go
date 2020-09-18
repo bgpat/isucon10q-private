@@ -867,7 +867,7 @@ func searchEstateNazotte(c echo.Context) error {
 
 	estatesInPolygon := []Estate{}
 	query := `SELECT * FROM estate WHERE ST_Contains(ST_PolygonFromText((%s)), POINT(latitude, longitude) ORDER BY popularity DESC, id ASC`
-	err = db.SelectContext(nrctx(c), &estatesInPolygon, query, coordinates.coordinatesToText())
+	err = db.SelectContext(nrctx(c), &estatesInPolygon, fmt.Sprintf(query, coordinates.coordinatesToText()))
 	if err == sql.ErrNoRows {
 		c.Echo().Logger.Infof("select * from estate where latitude ...", err)
 		return c.JSON(http.StatusOK, EstateSearchResponse{Count: 0, Estates: []Estate{}})
