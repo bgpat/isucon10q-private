@@ -39,6 +39,7 @@ func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range,
 	})
 
 	estates := make([]Estate, 0)
+FILTER:
 	for _, e := range all {
 		if doorHeight != nil {
 			if doorHeight.Min != -1 && e.DoorHeight < doorHeight.Min {
@@ -68,15 +69,10 @@ func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range,
 		}
 
 		if len(features) > 0 {
-			var matched bool
 			for _, f := range features {
-				if strings.Contains(e.Features, f) {
-					matched = true
-					break
+				if !strings.Contains(e.Features, f) {
+					continue FILTER
 				}
-			}
-			if !matched {
-				break
 			}
 		}
 
