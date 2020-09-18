@@ -17,3 +17,19 @@
 /home/isucon/*
 !/home/isucon/.bashrc
 
+# /etc/nginx/sites-available/isuumo.conf
+/*
+!/etc
+/etc/*
+!/etc/nginx
+/etc/nginx/*
+!/etc/nginx/sites-available
+/etc/nginx/sites-available/*
+!/etc/nginx/sites-available/isuumo.conf
+
+# /.git/MERGE_MSG
+/*
+!/.git
+/.git/*
+!/.git/MERGE_MSG
+
