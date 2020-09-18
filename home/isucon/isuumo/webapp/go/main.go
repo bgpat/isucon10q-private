@@ -273,12 +273,12 @@ func main() {
 	e.GET("/api/recommended_estate/:id", searchRecommendedEstateWithChair)
 
 	e.GET("/debug/estates", func(c echo.Context) error {
-		estates, err := searchEstatesCache(nil, nil, nil, nil, 0, 10)
+		estates, count, err := searchEstatesCache(nil, nil, nil, nil, 0, 10)
 		if err != nil {
 			c.Logger().Errorf("error : %v", err)
 			return c.JSON(http.StatusInternalServerError, err)
 		}
-		return c.JSON(http.StatusOK, estates)
+		return c.JSON(http.StatusOK, EstateSearchResponse{Count: int64(count), Estates: estates})
 	})
 
 	mySQLConnectionData = NewMySQLConnectionEnv()
@@ -793,12 +793,12 @@ func searchEstates(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	estates, err := searchEstatesCache(doorHeight, doorWidth, rent, features, page, perPage)
+	estates, count, err := searchEstatesCache(doorHeight, doorWidth, rent, features, page, perPage)
 	if err != nil {
-		c.Logger().Errorf("searchEstateCache error : %v", err)
+		c.Logger().Errorf("searchEstatesCache error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	return c.JSON(http.StatusOK, EstateSearchResponse{Count: int64(len(estates)), Estates: estates})
+	return c.JSON(http.StatusOK, EstateSearchResponse{Count: int64(count), Estates: estates})
 }
 
 func getLowPricedEstate(c echo.Context) error {
