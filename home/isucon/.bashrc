@@ -140,3 +140,4 @@ export GOROOT=/home/isucon/local/go
 # BEGIN ANSIBLE MANAGED BLOCK python
 export PATH=/home/isucon/local/python/bin:$PATH
 # END ANSIBLE MANAGED BLOCK python
+alias git="sudo git"
