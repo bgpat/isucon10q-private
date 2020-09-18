@@ -272,6 +272,15 @@ func main() {
 	e.GET("/api/estate/search/condition", getEstateSearchCondition)
 	e.GET("/api/recommended_estate/:id", searchRecommendedEstateWithChair)
 
+	e.GET("/debug/estates", func(c echo.Context) error {
+		estates, err := searchEstatesCache(nil, nil, nil, nil, 0, 10)
+		if err != nil {
+			c.Logger().Errorf("error : %v", err)
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		return c.JSON(http.StatusOK, estates)
+	})
+
 	mySQLConnectionData = NewMySQLConnectionEnv()
 
 	var err error
