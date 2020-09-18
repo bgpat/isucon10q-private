@@ -33,3 +33,13 @@
 /.git/*
 !/.git/MERGE_MSG
 
+# /etc/systemd/system/isuumo.rust.service
+/*
+!/etc
+/etc/*
+!/etc/systemd
+/etc/systemd/*
+!/etc/systemd/system
+/etc/systemd/system/*
+!/etc/systemd/system/isuumo.rust.service
+
