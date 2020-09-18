@@ -63,7 +63,7 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 		if len(features) > 0 {
 			for _, f := range features {
 				if !strings.Contains(e.Features, f) {
-					break
+					return true
 				}
 			}
 		}
