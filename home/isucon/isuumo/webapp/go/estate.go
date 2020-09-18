@@ -34,28 +34,28 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 		e := v.(*Estate)
 
 		if doorHeight != nil {
-			if doorHeight.Min == -1 || e.DoorHeight < doorHeight.Min {
+			if doorHeight.Min != -1 && e.DoorHeight < doorHeight.Min {
 				return true
 			}
-			if doorHeight.Max == -1 || e.DoorHeight >= doorHeight.Max {
+			if doorHeight.Max != -1 && e.DoorHeight >= doorHeight.Max {
 				return true
 			}
 		}
 
 		if doorWidth != nil {
-			if doorWidth.Min == -1 || e.DoorWidth < doorWidth.Min {
+			if doorWidth.Min != -1 && e.DoorWidth < doorWidth.Min {
 				return true
 			}
-			if doorWidth.Max == -1 || e.DoorWidth >= doorWidth.Max {
+			if doorWidth.Max != -1 && e.DoorWidth >= doorWidth.Max {
 				return true
 			}
 		}
 
 		if rent != nil {
-			if rent.Min == -1 || e.Rent < rent.Min {
+			if rent.Min != -1 && e.Rent < rent.Min {
 				return true
 			}
-			if rent.Max == -1 || e.Rent >= rent.Max {
+			if rent.Max != -1 && e.Rent >= rent.Max {
 				return true
 			}
 		}
