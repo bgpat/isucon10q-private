@@ -238,11 +238,6 @@ func init() {
 		os.Exit(1)
 	}
 	json.Unmarshal(jsonText, &estateSearchCondition)
-
-	if err := load(context.Background()); err != nil {
-		fmt.Printf("%v\n", err)
-		os.Exit(1)
-	}
 }
 
 func main() {
@@ -286,6 +281,10 @@ func main() {
 	}
 	db.SetMaxOpenConns(10)
 	defer db.Close()
+
+	if err := load(context.Background()); err != nil {
+		e.Logger.Fatalf("failed to initial data : %v", err)
+	}
 
 	// Start server
 	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_PORT", "1323"))
