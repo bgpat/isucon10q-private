@@ -7,10 +7,7 @@ import (
 	"sync"
 )
 
-var (
-	estateCache     sync.Map
-	estateCacheSize int
-)
+var estateCache sync.Map
 
 func loadEstates(ctx context.Context) error {
 	estates := []Estate{}
@@ -22,7 +19,6 @@ func loadEstates(ctx context.Context) error {
 		e := e
 		estateCache.Store(e.ID, &e)
 	}
-	estateCacheSize = len(estates)
 	return nil
 }
 
@@ -31,57 +27,54 @@ func addEstate(e Estate) {
 }
 
 func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, int, error) {
-	defer nrsgmt(ctx, "searchEstatesCache").End()
+	defer nrsgmt(ctx, "search").End()
 
-	all := make([]Estate, 0, len(estateCacheSize))
+	estates := make([]Estate, 0)
 	var err error
 
+	rs := nrsgmt(ctx, "range")
 	estateCache.Range(func(_, v interface{}) bool {
 		e := v.(*Estate)
-		all = append(all, *e)
-		return true
-	})
 
-	estates := make([]Estate, 0, len(all))
-FILTER:
-	for _, e := range all {
 		if doorHeight != nil {
 			if doorHeight.Min != -1 && e.DoorHeight < doorHeight.Min {
-				continue
+				return true
 			}
 			if doorHeight.Max != -1 && e.DoorHeight >= doorHeight.Max {
-				continue
+				return true
 			}
 		}
 
 		if doorWidth != nil {
 			if doorWidth.Min != -1 && e.DoorWidth < doorWidth.Min {
-				continue
+				return true
 			}
 			if doorWidth.Max != -1 && e.DoorWidth >= doorWidth.Max {
-				continue
+				return true
 			}
 		}
 
 		if rent != nil {
 			if rent.Min != -1 && e.Rent < rent.Min {
-				continue
+				return true
 			}
 			if rent.Max != -1 && e.Rent >= rent.Max {
-				continue
+				return true
 			}
 		}
 
 		if len(features) > 0 {
 			for _, f := range features {
 				if !strings.Contains(e.Features, f) {
-					continue FILTER
+					return true
 				}
 			}
 		}
 
-		estates = append(estates, e)
-	}
+		estates = append(estates, *e)
+		return true
+	})
+	rs.End()
 
 	left := page * perPage
 	right := left + perPage
@@ -90,12 +83,14 @@ FILTER:
 		right = total
 	}
 
+	ss := nrsgmt(ctx, "sort")
 	sort.Slice(estates, func(i, j int) bool {
 		if estates[i].Popularity == estates[j].Popularity {
 			return estates[i].ID < estates[j].ID
 		}
 		return estates[i].Popularity > estates[j].Popularity
 	})
+	ss.End()
 
 	return estates[left:right], total, err
 }
