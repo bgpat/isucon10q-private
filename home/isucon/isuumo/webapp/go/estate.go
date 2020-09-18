@@ -15,20 +15,20 @@ func loadEstates(ctx context.Context) error {
 	}
 	estateCache = sync.Map{}
 	for _, e := range estates {
-		estateCache.Store(e.ID, e)
+		estateCache.Store(e.ID, &e)
 	}
 	return nil
 }
 
 func addEstate(e Estate) {
-	estateCache.Store(e.ID, e)
+	estateCache.Store(e.ID, &e)
 }
 
 func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, error) {
 	estates := make([]Estate, 0)
 	var err error
 	estateCache.Range(func(_, v interface{}) bool {
-		e := v.(Estate)
+		e := v.(*Estate)
 
 		if doorHeight != nil {
 			if doorHeight.Min == -1 || e.DoorHeight < doorHeight.Min {
@@ -68,7 +68,7 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 			return true
 		}
 
-		estates = append(estates, e)
+		estates = append(estates, *e)
 		return true
 	})
 	left := page * perPage
