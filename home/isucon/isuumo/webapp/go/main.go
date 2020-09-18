@@ -866,7 +866,7 @@ func searchEstateNazotte(c echo.Context) error {
 	}
 
 	estatesInPolygon := []Estate{}
-	query := `SELECT * FROM estate WHERE ST_Contains(ST_PolygonFromText((%s)), POINT(latitude, longitude) ORDER BY popularity DESC, id ASC`
+	query := `SELECT * FROM estate WHERE ST_Contains(ST_PolygonFromText((%s)), POINT(latitude, longitude)) ORDER BY popularity DESC, id ASC`
 	query = fmt.Sprintf(query, coordinates.coordinatesToText())
 	err = db.SelectContext(nrctx(c), &estatesInPolygon, query)
 	if err == sql.ErrNoRows {
