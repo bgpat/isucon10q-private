@@ -7,7 +7,10 @@ import (
 	"sync"
 )
 
-var estateCache sync.Map
+var (
+	estateCache     sync.Map
+	estateCacheSize int
+)
 
 func loadEstates(ctx context.Context) error {
 	estates := []Estate{}
@@ -19,6 +22,7 @@ func loadEstates(ctx context.Context) error {
 		e := e
 		estateCache.Store(e.ID, &e)
 	}
+	estateCacheSize = len(estates)
 	return nil
 }
 
@@ -29,7 +33,7 @@ func addEstate(e Estate) {
 func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, int, error) {
 	defer nrsgmt(ctx, "searchEstatesCache").End()
 
-	all := make([]Estate, 0)
+	all := make([]Estate, 0, len(estateCacheSize))
 	var err error
 
 	estateCache.Range(func(_, v interface{}) bool {
@@ -38,7 +42,7 @@ func searchEstatesCache(ctx context.Context, doorHeight, doorWidth, rent *Range,
 		return true
 	})
 
-	estates := make([]Estate, 0)
+	estates := make([]Estate, 0, len(all))
 FILTER:
 	for _, e := range all {
 		if doorHeight != nil {
