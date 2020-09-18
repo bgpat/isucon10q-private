@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 )
@@ -79,5 +80,12 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 		right = total
 	}
 	fmt.Printf("total=%v [%v:%v]\n", total, left, right)
+
+	sort.Slice(estates, func(i, j int) bool {
+		if estates[i].Popularity == estates[j].Popularity {
+			return estates[i].ID < estates[j].ID
+		}
+		return estates[i].Popularity > estates[j].Popularity
+	})
 	return estates[left:right], err
 }
