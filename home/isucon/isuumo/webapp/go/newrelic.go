@@ -17,8 +17,8 @@ func init() {
 	app, err = newrelic.NewApplication(
 		newrelic.ConfigAppName("bgpat/isucon10q-private"),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_LICENSE_KEY")),
-		newrelic.ConfigDistributedTracerEnabled(true),
-		newrelic.ConfigDebugLogger(os.Stdout),
+		//newrelic.ConfigDistributedTracerEnabled(true),
+		//newrelic.ConfigDebugLogger(os.Stdout),
 	)
 	if err != nil {
 		fmt.Println(err)
