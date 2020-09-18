@@ -301,6 +301,9 @@ func main() {
 }
 
 func load(ctx context.Context) error {
+	if err := loadChairs(ctx); err != nil {
+		return err
+	}
 	if err := loadEstates(ctx); err != nil {
 		return err
 	}
@@ -390,6 +393,7 @@ func postChair(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 	defer tx.Rollback()
+	chairs := make([]Chair, 0, len(records))
 	for _, row := range records {
 		rm := RecordMapper{Record: row}
 		id := rm.NextInt()
@@ -414,148 +418,103 @@ func postChair(c echo.Context) error {
 			c.Logger().Errorf("failed to insert chair: %v", err)
 			return c.NoContent(http.StatusInternalServerError)
 		}
+		chairs = append(chairs, Chair{
+			ID:          int64(id),
+			Name:        name,
+			Description: description,
+			Thumbnail:   thumbnail,
+			Price:       int64(price),
+			Height:      int64(height),
+			Width:       int64(width),
+			Depth:       int64(depth),
+			Color:       color,
+			Features:    features,
+			Kind:        kind,
+			Popularity:  int64(popularity),
+			Stock:       int64(stock),
+		})
 	}
 	if err := tx.Commit(); err != nil {
 		c.Logger().Errorf("failed to commit tx: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	for _, c := range chairs {
+		addChair(c)
+	}
 	return c.NoContent(http.StatusCreated)
 }
 
 func searchChairs(c echo.Context) error {
-	conditions := make([]string, 0)
-	params := make([]interface{}, 0)
+	var (
+		price   *Range
+		height  *Range
+		width   *Range
+		depth   *Range
+		page    int
+		perPage int
+		err     error
+	)
 
 	if c.QueryParam("priceRangeId") != "" {
-		chairPrice, err := getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
+		price, err = getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("priceRangeID invalid, %v : %v", c.QueryParam("priceRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-
-		if chairPrice.Min != -1 {
-			conditions = append(conditions, "price >= ?")
-			params = append(params, chairPrice.Min)
-		}
-		if chairPrice.Max != -1 {
-			conditions = append(conditions, "price < ?")
-			params = append(params, chairPrice.Max)
-		}
 	}
 
 	if c.QueryParam("heightRangeId") != "" {
-		chairHeight, err := getRange(chairSearchCondition.Height, c.QueryParam("heightRangeId"))
+		height, err = getRange(chairSearchCondition.Height, c.QueryParam("heightRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("heightRangeIf invalid, %v : %v", c.QueryParam("heightRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-
-		if chairHeight.Min != -1 {
-			conditions = append(conditions, "height >= ?")
-			params = append(params, chairHeight.Min)
-		}
-		if chairHeight.Max != -1 {
-			conditions = append(conditions, "height < ?")
-			params = append(params, chairHeight.Max)
-		}
 	}
 
 	if c.QueryParam("widthRangeId") != "" {
-		chairWidth, err := getRange(chairSearchCondition.Width, c.QueryParam("widthRangeId"))
+		width, err = getRange(chairSearchCondition.Width, c.QueryParam("widthRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("widthRangeID invalid, %v : %v", c.QueryParam("widthRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-
-		if chairWidth.Min != -1 {
-			conditions = append(conditions, "width >= ?")
-			params = append(params, chairWidth.Min)
-		}
-		if chairWidth.Max != -1 {
-			conditions = append(conditions, "width < ?")
-			params = append(params, chairWidth.Max)
-		}
 	}
 
 	if c.QueryParam("depthRangeId") != "" {
-		chairDepth, err := getRange(chairSearchCondition.Depth, c.QueryParam("depthRangeId"))
+		depth, err = getRange(chairSearchCondition.Depth, c.QueryParam("depthRangeId"))
 		if err != nil {
 			c.Echo().Logger.Infof("depthRangeId invalid, %v : %v", c.QueryParam("depthRangeId"), err)
 			return c.NoContent(http.StatusBadRequest)
 		}
-
-		if chairDepth.Min != -1 {
-			conditions = append(conditions, "depth >= ?")
-			params = append(params, chairDepth.Min)
-		}
-		if chairDepth.Max != -1 {
-			conditions = append(conditions, "depth < ?")
-			params = append(params, chairDepth.Max)
-		}
 	}
 
-	if c.QueryParam("kind") != "" {
-		conditions = append(conditions, "kind = ?")
-		params = append(params, c.QueryParam("kind"))
-	}
+	kind := c.QueryParam("kind")
+	color := c.QueryParam("color")
+	features := strings.Split(c.QueryParam("features"), ",")
 
-	if c.QueryParam("color") != "" {
-		conditions = append(conditions, "color = ?")
-		params = append(params, c.QueryParam("color"))
-	}
-
-	if c.QueryParam("features") != "" {
-		for _, f := range strings.Split(c.QueryParam("features"), ",") {
-			conditions = append(conditions, "features LIKE CONCAT('%', ?, '%')")
-			params = append(params, f)
-		}
-	}
-
-	if len(conditions) == 0 {
+	if price == nil && height == nil && width == nil && depth == nil && kind == "" && color == "" && features == nil {
 		c.Echo().Logger.Infof("Search condition not found")
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	conditions = append(conditions, "stock > 0")
-
-	page, err := strconv.Atoi(c.QueryParam("page"))
+	page, err = strconv.Atoi(c.QueryParam("page"))
 	if err != nil {
 		c.Logger().Infof("Invalid format page parameter : %v", err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	perPage, err := strconv.Atoi(c.QueryParam("perPage"))
+	perPage, err = strconv.Atoi(c.QueryParam("perPage"))
 	if err != nil {
 		c.Logger().Infof("Invalid format perPage parameter : %v", err)
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	searchQuery := "SELECT * FROM chair WHERE "
-	countQuery := "SELECT COUNT(*) FROM chair WHERE "
-	searchCondition := strings.Join(conditions, " AND ")
-	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
-
-	var res ChairSearchResponse
-	err = db.GetContext(nrctx(c), &res.Count, countQuery+searchCondition, params...)
+	chairs, count, err := searchChairsCache(price, height, width, depth, kind, color, features, page, perPage)
 	if err != nil {
-		c.Logger().Errorf("searchChairs DB execution error : %v", err)
+		c.Logger().Errorf("searchChairsCache error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	chairs := []Chair{}
-	params = append(params, perPage, page*perPage)
-	err = db.SelectContext(nrctx(c), &chairs, searchQuery+searchCondition+limitOffset, params...)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return c.JSON(http.StatusOK, ChairSearchResponse{Count: 0, Chairs: []Chair{}})
-		}
-		c.Logger().Errorf("searchChairs DB execution error : %v", err)
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	res.Chairs = chairs
-
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, ChairSearchResponse{Count: int64(count), Chairs: chairs})
 }
 
 func buyChair(c echo.Context) error {
@@ -606,6 +565,9 @@ func buyChair(c echo.Context) error {
 		c.Echo().Logger.Errorf("transaction commit error : %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	chair.Stock--
+	addChair(chair)
 
 	return c.NoContent(http.StatusOK)
 }
