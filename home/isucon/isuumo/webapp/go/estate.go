@@ -77,5 +77,6 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 	if right > total {
 		right = total
 	}
+	fmt.Printf("total=%v, [%v:%v]\n", total, left, right)
 	return estates[left:right], err
 }
