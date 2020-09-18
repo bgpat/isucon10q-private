@@ -17,6 +17,7 @@ func loadEstates(ctx context.Context) error {
 	}
 	estateCache = sync.Map{}
 	for _, e := range estates {
+		e := e
 		estateCache.Store(e.ID, &e)
 	}
 	return nil
