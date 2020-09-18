@@ -58,7 +58,7 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 			}
 		}
 
-		var matched bool
+		matched := len(features) == 0
 		for _, f := range features {
 			if strings.Contains(e.Features, f) {
 				matched = true
@@ -78,6 +78,6 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 	if right > total {
 		right = total
 	}
-	fmt.Printf("total=%v, [%v:%v]\n", total, left, right)
+	fmt.Printf("total=%v [%v:%v]\n", total, left, right)
 	return estates[left:right], err
 }
