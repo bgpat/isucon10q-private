@@ -27,7 +27,7 @@ func addEstate(e Estate) {
 	estateCache.Store(e.ID, &e)
 }
 
-func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, error) {
+func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, page, perPage int) ([]Estate, int, error) {
 	estates := make([]Estate, 0)
 	var err error
 	estateCache.Range(func(_, v interface{}) bool {
@@ -88,5 +88,5 @@ func searchEstatesCache(doorHeight, doorWidth, rent *Range, features []string, p
 		}
 		return estates[i].Popularity > estates[j].Popularity
 	})
-	return estates[left:right], err
+	return estates[left:right], total, err
 }

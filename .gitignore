@@ -43,3 +43,9 @@
 /etc/systemd/system/*
 !/etc/systemd/system/isuumo.rust.service
 
+# /.git/MERGE_MSG
+/*
+!/.git
+/.git/*
+!/.git/MERGE_MSG
+
