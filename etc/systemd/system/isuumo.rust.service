@@ -8,6 +8,7 @@ PIDFile=/home/isucon/isuumo/webapp/rust/server.pid
 
 User=isucon
 Group=isucon
+Environment="SERVER_PORT=1324"
 ExecStart=/home/isucon/isuumo/webapp/rust/target/release/isuumo
 ExecStop=/bin/kill -s QUIT $MAINPID
 
